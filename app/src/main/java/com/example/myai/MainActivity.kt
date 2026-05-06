@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity(), GeminiClient.GeminiListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        geminiClient = GeminiClient("AIzaSyCTmvXRgUm_4IDUnpJzFzXMf8JukP3rB-Y", this)
+        geminiClient = GeminiClient(BuildConfig.GEMINI_API_KEY, this)
         geminiClient.connect()
 
         binding.micButton.setOnClickListener {
