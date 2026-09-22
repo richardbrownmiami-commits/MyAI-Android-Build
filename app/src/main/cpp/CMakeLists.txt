@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 project(myai_brain_android LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(BRAIN_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../../../../brain)
+set(BRAIN_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../../../brain)
 add_library(myai_brain SHARED
     brain_jni.cpp
     ${BRAIN_ROOT}/atomspace/core/atom.cpp
