@@ -1,4 +1,4 @@
-#include "brain/nars/ona_bridge.h"
+#include "ona_bridge.h"
 
 extern "C" {
 #include "NAR.h"
