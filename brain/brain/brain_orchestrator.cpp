@@ -5,7 +5,7 @@
 #include <utility>
 namespace brain {
 BrainOrchestrator::BrainOrchestrator(){ nars::init(); nars_ready_=true; }
-BrainOrchestrator::~BrainOrchestrator(){ if(nars_ready_) nars::shutdown(); }
+BrainOrchestrator::~BrainOrchestrator() = default;
 void BrainOrchestrator::record_history(const std::string& value){
     narsese_history_.push_back(value);
     if(narsese_history_.size()>history_limit_)
