@@ -52,7 +52,7 @@ class BrainStore(context: Context) : SQLiteOpenHelper(context, "brain.db", null,
         ZipFile(source).use { zip ->
             val manifest=zip.getEntry("manifest.json") ?: error("Invalid brain.brain: missing manifest")
             val json=zip.getInputStream(manifest).bufferedReader().use{it.readText()}
-            val version=Regex("\\\"version\\\"\\\\s*:\\s*(\\\\d+)").find(json)?.groupValues?.get(1)?.toIntOrNull() ?: error("Invalid brain.brain: missing version")
+            val version=Regex("\"version\"\\s*:\\s*(\\d+)").find(json)?.groupValues?.get(1)?.toIntOrNull() ?: error("Invalid brain.brain: missing version")
             require(version in 1..FORMAT_VERSION) {"Unsupported brain.brain version $version"}
             val entry=zip.getEntry("narsese.log") ?: return@use
             zip.getInputStream(entry).bufferedReader().useLines { lines -> lines.map{it.trim()}.filter{it.isNotBlank()}.takeLast(MAX_EVENTS).forEach(events::add) }
