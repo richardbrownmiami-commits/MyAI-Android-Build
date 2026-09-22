@@ -43,7 +43,7 @@
 - [ ] Coding knowledge corpus
 
 ## Phase 6 — Hardening
-- [ ] Complete ARMv7 APK CI pass with artifact
+- [x] Complete ARMv7 APK CI pass with artifact
 - [ ] Native ONA regression tests on Android
 - [ ] Brain format migration/versioning
 - [ ] Memory limits and eviction policy
