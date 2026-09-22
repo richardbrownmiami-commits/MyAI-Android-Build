@@ -17,7 +17,8 @@ enum class AtomType : TypeId {
     InheritanceLink = 100,
     SimilarityLink = 101,
     ImplicationLink = 102,
-    EvaluationLink = 103
+    EvaluationLink = 103,
+    NegationLink = 104
 };
 
 struct TruthValue {
