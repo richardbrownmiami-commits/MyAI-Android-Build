@@ -15,7 +15,7 @@
 - [x] ONA bridge API
 - [x] Provenance/source/timestamp/context fields
 - [x] Explicit negation/contradiction marker support
-- [ ] Full bidirectional structural AtomSpace <-> ONA projection for every supported Atom type
+- [x] Full bidirectional structural AtomSpace <-> ONA projection for every supported Atom type
 
 ## Phase 3 — Persistence
 - [x] SQLite schema
@@ -45,11 +45,15 @@
 ## Phase 6 — Hardening
 - [x] Complete ARMv7 APK CI pass with artifact
 - [ ] Native ONA regression tests on Android
-- [ ] Brain format migration/versioning
-- [ ] Memory limits and eviction policy
-- [ ] Provenance and contradiction query APIs
-- [ ] Thread-safety around JNI brain state
+- [x] Brain format migration/versioning
+- [x] Memory limits and eviction policy
+- [x] Provenance and contradiction query APIs
+- [x] Thread-safety around JNI brain state
 
 ## Acceptance target
 
 The target is an ARMv7 APK that can create symbolic concepts, run ONA reasoning, persist durable state in SQLite, export/import brain.brain, operate offline, and optionally use web tools when explicitly enabled.
+
+## Verification boundary
+
+The remaining unchecked items require either an actual Android device/runtime, an upstream ONA opaque-memory serialization API, or external data/provider dependencies. They are intentionally not represented as complete merely by adding placeholders.
