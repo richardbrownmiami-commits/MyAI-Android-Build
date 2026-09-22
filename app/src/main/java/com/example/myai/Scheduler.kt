@@ -1,21 +1,31 @@
 package com.example.myai
 
 import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.provider.Settings
-import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationCompat
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val prompt = intent.getStringExtra("prompt") ?: "Time for our check-in!"
-        val serviceIntent = Intent(context, ProactiveService::class.java).apply {
-            putExtra("prompt", prompt)
+        val prompt = intent.getStringExtra("prompt") ?: "Scheduled brain task"
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            manager.createNotificationChannel(
+                NotificationChannel("brain_tasks", "Brain tasks", NotificationManager.IMPORTANCE_DEFAULT)
+            )
         }
-        ContextCompat.startForegroundService(context, serviceIntent)
+        val notification = NotificationCompat.Builder(context, "brain_tasks")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("MyAI local brain")
+            .setContentText(prompt)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(prompt.hashCode(), notification)
     }
 }
 
@@ -28,7 +38,7 @@ class TaskManager(private val context: Context) {
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            timeMs.toInt(), // Use timeMs as request code for uniqueness
+            timeMs.toInt(),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -37,7 +47,6 @@ class TaskManager(private val context: Context) {
             if (alarmManager.canScheduleExactAlarms()) {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
             } else {
-                // Fallback or request permission
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMs, pendingIntent)
             }
         } else {

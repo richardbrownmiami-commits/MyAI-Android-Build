@@ -16,6 +16,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk { abiFilters += listOf("armeabi-v7a") }
     }
 
     buildTypes {
@@ -31,6 +32,14 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+    ndkVersion = "25.2.9519653"
+
     buildFeatures {
         viewBinding = true
     }

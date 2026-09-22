@@ -31,12 +31,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".ProactiveService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="microphone|mediaPlayback" />
-
         <receiver
             android:name=".AlarmReceiver"
             android:enabled="true"
