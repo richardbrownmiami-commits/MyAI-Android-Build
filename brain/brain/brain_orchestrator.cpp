@@ -1,6 +1,7 @@
 #include "brain_orchestrator.h"
 #include "ona_bridge.h"
 #include "brain/representation/bridge.h"
+#include "brain/representation/contradiction.h"
 #include <sstream>
 #include <utility>
 namespace brain {
@@ -70,6 +71,6 @@ std::string BrainOrchestrator::snapshot_json() const{
     return out.str();
 }
 std::size_t BrainOrchestrator::atom_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return space_.size();}
-std::size_t BrainOrchestrator::history_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return narsese_history_.size();}
+std::size_t BrainOrchestrator::history_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return narsese_history_.size();}\nbool BrainOrchestrator::has_explicit_contradiction() const noexcept{std::lock_guard<std::mutex> lock(mutex_); for(const auto& a:space_.atoms()) if(representation::is_explicit_contradiction(space_,a->id())) return true; return false;}
 void BrainOrchestrator::set_history_limit(std::size_t limit){std::lock_guard<std::mutex> lock(mutex_);history_limit_=limit;if(narsese_history_.size()>limit)narsese_history_.erase(narsese_history_.begin(),narsese_history_.begin()+(narsese_history_.size()-limit));}
 }
