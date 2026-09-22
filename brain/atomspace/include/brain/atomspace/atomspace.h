@@ -10,8 +10,10 @@ namespace brain::atomspace {
 class AtomSpace {
 public:
     AtomSpace() = default;
-    std::shared_ptr<Node> add_node(AtomType type, const std::string& name, TruthValue truth = {});
-    std::shared_ptr<Link> add_link(AtomType type, const std::vector<AtomId>& outgoing, TruthValue truth = {});
+    std::shared_ptr<Node> add_node(AtomType type, const std::string& name, TruthValue truth = {}, AtomMetadata metadata = {});
+    std::shared_ptr<Node> add_node_with_id(AtomId id, AtomType type, const std::string& name, TruthValue truth = {}, AtomMetadata metadata = {});
+    std::shared_ptr<Link> add_link(AtomType type, const std::vector<AtomId>& outgoing, TruthValue truth = {}, AtomMetadata metadata = {});
+    std::shared_ptr<Link> add_link_with_id(AtomId id, AtomType type, const std::vector<AtomId>& outgoing, TruthValue truth = {}, AtomMetadata metadata = {});
     std::shared_ptr<Atom> get(AtomId id) const;
     std::shared_ptr<Node> find_node(AtomType type, const std::string& name) const;
     std::vector<std::shared_ptr<Atom>> atoms() const;
