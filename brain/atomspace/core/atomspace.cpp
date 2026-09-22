@@ -1,5 +1,6 @@
 #include "brain/atomspace/atomspace.h"
 #include <algorithm>
+#include <utility>
 namespace brain::atomspace {
 std::shared_ptr<Node> AtomSpace::add_node(AtomType t,const std::string& n,TruthValue tv,AtomMetadata m){auto p=Node(0,t,n);auto i=key_index_.find(p.key());if(i!=key_index_.end())return std::static_pointer_cast<Node>(atoms_.at(i->second));return add_node_with_id(next_id_,t,n,tv,std::move(m));}
 std::shared_ptr<Node> AtomSpace::add_node_with_id(AtomId id,AtomType t,const std::string& n,TruthValue tv,AtomMetadata m){auto p=Node(0,t,n);auto i=key_index_.find(p.key());if(i!=key_index_.end())return std::static_pointer_cast<Node>(atoms_.at(i->second));auto x=std::make_shared<Node>(id,t,n,tv,std::move(m));key_index_[x->key()]=id;atoms_[id]=x;if(id>=next_id_)next_id_=id+1;return x;}
