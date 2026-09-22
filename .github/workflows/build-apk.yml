@@ -12,6 +12,22 @@ on:
       - main
 
 jobs:
+  brain-native:
+    runs-on: ubuntu-latest
+    name: Build native brain smoke test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Configure brain
+        run: cmake -S brain -B brain/build
+      - name: Build brain
+        run: cmake --build brain/build --parallel
+      - name: Run brain smoke test
+        working-directory: brain/build
+        run: ./brain_native_smoke
+
   build:
     runs-on: ubuntu-latest
     name: Build Debug APK
