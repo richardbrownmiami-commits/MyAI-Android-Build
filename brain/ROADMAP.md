@@ -2,10 +2,10 @@
 
 ## Phase 1 — Native foundation
 - [x] Create ARMv7 brain branch
-- [ ] Add ONA as a native dependency
-- [ ] Trace AtomSpace source dependency closure
-- [ ] Define minimal AtomSpace Android target
-- [ ] Build native smoke test
+- [x] Pin upstream ONA source as a native dependency
+- [x] Trace AtomSpace source dependency closure
+- [x] Define minimal AtomSpace Android target
+- [x] Build native smoke test
 
 ## Phase 2 — Cognitive bridge
 - [ ] Define CR data structures
@@ -14,8 +14,8 @@
 - [ ] contradiction/provenance handling
 
 ## Phase 3 — Persistence
-- [ ] SQLite schema
-- [ ] Atom serialization
+- [x] SQLite schema
+- [x] Atom serialization
 - [ ] ONA state persistence
 - [ ] brain import/export
 
