@@ -1,7 +1,6 @@
 #include "brain/brain/brain_orchestrator.h"
 #include "brain/nars/ona_bridge.h"
 #include "brain/representation/bridge.h"
-#include <chrono>
 #include <sstream>
 
 namespace brain {
@@ -25,10 +24,21 @@ std::string BrainOrchestrator::remember_inheritance(const std::string& subject, 
 std::string BrainOrchestrator::process_text(const std::string& text, int cycles) {
     const auto marker = text.find(" is ");
     if (marker != std::string::npos && marker > 0 && marker + 4 < text.size()) {
-        const auto subject = text.substr(0, marker);
-        const auto predicate = text.substr(marker + 4);
-        return remember_inheritance(subject, predicate);
+        return remember_inheritance(text.substr(0, marker), text.substr(marker + 4));
     }
+
+    const auto open = text.find('<');
+    const auto arrow = text.find(" --> ");
+    const auto close = text.find('>');
+    if (open != std::string::npos && arrow != std::string::npos && close != std::string::npos && arrow > open + 1 && close > arrow + 5) {
+        auto subject = text.substr(open + 1, arrow - open - 1);
+        auto predicate = text.substr(arrow + 5, close - arrow - 5);
+        if (!subject.empty() && !predicate.empty()) {
+            const auto sentence = remember_inheritance(subject, predicate);
+            return sentence;
+        }
+    }
+
     return reason(text, cycles);
 }
 
