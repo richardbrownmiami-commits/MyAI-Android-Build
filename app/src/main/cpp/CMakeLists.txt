@@ -36,6 +36,8 @@ set(ONA_SOURCES
     ${ONA_ROOT}/src/Truth.c
     ${ONA_ROOT}/src/Usage.c
     ${ONA_ROOT}/src/Variable.c
+    ${ONA_ROOT}/src/NetworkNAR/Metric.c
+    ${ONA_ROOT}/src/NetworkNAR/UDP.c
     ${ONA_RULE_TABLE}
 )
 
