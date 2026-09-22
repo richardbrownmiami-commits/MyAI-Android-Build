@@ -46,10 +46,20 @@ class BrainStore(context: Context) : SQLiteOpenHelper(context, "brain.db", null,
             zip.putNextEntry(ZipEntry("atomspace.json"))
             zip.write(snapshot.toByteArray())
             zip.closeEntry()
+            val dbFile = contextDatabaseFile()
+            if (dbFile.exists()) {
+                zip.putNextEntry(ZipEntry("brain.db"))
+                dbFile.inputStream().use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
             zip.putNextEntry(ZipEntry("narsese.log"))
             zip.write(events.toByteArray())
             zip.closeEntry()
         }
+    }
+
+    private fun contextDatabaseFile(): File {
+        return File(writableDatabase.path)
     }
 
     fun importBrain(source: File): List<String> {
