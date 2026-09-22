@@ -1,0 +1,3 @@
+[submodule "brain/nars/ona"]
+	path = brain/nars/ona
+	url = https://github.com/opennars/OpenNARS-for-Applications.git
