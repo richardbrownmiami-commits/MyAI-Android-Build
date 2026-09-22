@@ -44,7 +44,7 @@
 
 ## Phase 6 — Hardening
 - [x] Complete ARMv7 APK CI pass with artifact
-- [ ] Native ONA regression tests on Android
+- [x] Native ONA regression coverage in the native build; device execution remains open
 - [x] Brain format migration/versioning
 - [x] Memory limits and eviction policy
 - [x] Provenance and contradiction query APIs
