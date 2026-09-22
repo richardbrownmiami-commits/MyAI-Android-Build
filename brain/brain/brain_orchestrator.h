@@ -15,6 +15,7 @@ public:
     std::string snapshot_json() const;
     std::size_t atom_count() const noexcept;
     std::size_t history_count() const noexcept;
+    bool has_explicit_contradiction() const noexcept;
     void set_history_limit(std::size_t limit);
 private:
     atomspace::AtomSpace space_;
