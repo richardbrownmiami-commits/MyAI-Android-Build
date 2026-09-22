@@ -1,6 +1,6 @@
 #include <jni.h>
 #include "brain/brain_core.h"
-#include "brain/brain/brain_orchestrator.h"
+#include "brain_orchestrator.h"
 
 static brain::BrainOrchestrator g_brain;
 
