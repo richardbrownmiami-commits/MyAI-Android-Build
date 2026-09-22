@@ -22,24 +22,22 @@ std::string BrainOrchestrator::remember_inheritance(const std::string& subject,c
 }
 std::string BrainOrchestrator::process_text(const std::string& text,int cycles){
     std::lock_guard<std::mutex> lock(mutex_);
+    if(text.empty()) return {};
+    atomspace::AtomId created=0;
+    if(representation::ingest_narsese(space_,text,&created)){
+        const auto sentence=representation::atom_to_narsese(space_,created);
+        if(nars_ready_){nars::add_narsese(sentence.c_str());nars::cycles(cycles);record_history(sentence);}
+        return sentence;
+    }
     const auto marker=text.find(" is ");
     if(marker!=std::string::npos&&marker>0&&marker+4<text.size()){
         const auto subject=text.substr(0,marker), predicate=text.substr(marker+4);
         const auto id=representation::inheritance(space_,subject,predicate);
         const auto sentence=representation::atom_to_narsese(space_,id);
-        if(nars_ready_){nars::add_narsese(sentence.c_str());nars::cycles(1);record_history(sentence);}
+        if(nars_ready_){nars::add_narsese(sentence.c_str());nars::cycles(cycles);record_history(sentence);}
         return sentence;
     }
-    const auto open=text.find('<'), arrow=text.find(" --> "), close=text.find('>');
-    if(open!=std::string::npos&&arrow!=std::string::npos&&close!=std::string::npos&&arrow>open+1&&close>arrow+5){
-        const auto subject=text.substr(open+1,arrow-open-1), predicate=text.substr(arrow+5,close-arrow-5);
-        if(!subject.empty()&&!predicate.empty()){
-            const auto sentence=representation::atom_to_narsese(space_,representation::inheritance(space_,subject,predicate));
-            if(nars_ready_){nars::add_narsese(sentence.c_str());nars::cycles(1);record_history(sentence);}
-            return sentence;
-        }
-    }
-    if(!nars_ready_||text.empty()) return {};
+    if(!nars_ready_) return {};
     nars::add_narsese(text.c_str()); nars::cycles(cycles); record_history(text); return text;
 }
 std::string BrainOrchestrator::reason(const std::string& narsese,int cycles){
