@@ -16,6 +16,8 @@ target_include_directories(brain_atomspace PUBLIC atomspace/include)
 
 add_library(brain_representation STATIC
     representation/core/bridge.cpp
+    representation/core/cr.cpp
+    representation/core/contradiction.cpp
 )
 target_include_directories(brain_representation PUBLIC representation/include atomspace/include)
 target_link_libraries(brain_representation PUBLIC brain_atomspace)
