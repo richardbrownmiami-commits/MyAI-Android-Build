@@ -10,6 +10,6 @@ int main(){
     assert(brain::representation::atom_to_narsese(as,id)=="<Cat --> Animal>.");
     brain::persistence::SqliteStore db;
     assert(db.open("brain_smoke.db")); assert(db.save(as));
-    brain::atomspace::AtomSpace restored; assert(db.load(restored)); assert(restored.size()==2);
+    brain::atomspace::AtomSpace restored; assert(db.load(restored)); assert(restored.size()==3);
     std::cout<<"brain smoke ok\n"; return 0;
 }
