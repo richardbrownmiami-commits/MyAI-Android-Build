@@ -27,7 +27,21 @@ Java_com_example_myai_BrainNative_reason(JNIEnv* env, jclass, jstring narsese, j
     return env->NewStringUTF(result.c_str());
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_myai_BrainNative_processText(JNIEnv* env, jclass, jstring text, jint cycles) {
+    const char* input = env->GetStringUTFChars(text, nullptr);
+    const std::string result = g_brain.process_text(input, static_cast<int>(cycles));
+    env->ReleaseStringUTFChars(text, input);
+    return env->NewStringUTF(result.c_str());
+}
+
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_myai_BrainNative_atomCount(JNIEnv*, jclass) {
     return static_cast<jint>(g_brain.atom_count());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_myai_BrainNative_snapshot(JNIEnv* env, jclass) {
+    const std::string result = g_brain.snapshot_json();
+    return env->NewStringUTF(result.c_str());
 }
