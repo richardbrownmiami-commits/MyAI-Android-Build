@@ -36,5 +36,4 @@ bool ingest_narsese(AtomSpace& as,const std::string&s,AtomId*created) {
     if(left.empty()||right.empty()) return false;
     AtomId id=binary(as,op,left,right,{}, {1.0,0.9}); if(created)*created=id; return true;
 }
-bool is_explicit_contradiction(const AtomSpace&as,AtomId id){return brain::representation::is_explicit_contradiction(as,id);}
 } // namespace brain::representation
