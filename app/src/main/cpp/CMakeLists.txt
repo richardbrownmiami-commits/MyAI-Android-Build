@@ -45,6 +45,7 @@ add_library(myai_brain SHARED
     ${BRAIN_ROOT}/atomspace/core/atomspace.cpp
     ${BRAIN_ROOT}/representation/core/bridge.cpp
     ${BRAIN_ROOT}/representation/core/cr.cpp
+    ${BRAIN_ROOT}/representation/core/contradiction.cpp
     ${BRAIN_ROOT}/brain/brain_orchestrator.cpp
     ${BRAIN_ROOT}/nars/core/ona_bridge.cpp
     ${BRAIN_ROOT}/core/brain_core.cpp
