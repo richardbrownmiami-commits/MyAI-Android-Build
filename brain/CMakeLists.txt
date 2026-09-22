@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.18)
 project(native_brain LANGUAGES C CXX)
-
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-add_library(brain_core STATIC
-    core/brain_core.cpp
-)
-
-target_include_directories(brain_core PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-)
-
-# ONA and the minimal AtomSpace implementation will be attached here
-# after their source dependency closures are verified.
+find_package(SQLite3 REQUIRED)
+add_library(brain_atomspace STATIC atomspace/core/atom.cpp atomspace/core/atomspace.cpp)
+target_include_directories(brain_atomspace PUBLIC atomspace/include)
+add_library(brain_representation STATIC representation/core/bridge.cpp)
+target_include_directories(brain_representation PUBLIC representation/include atomspace/include)
+target_link_libraries(brain_representation PUBLIC brain_atomspace)
+add_library(brain_persistence STATIC persistence/core/sqlite_store.cpp)
+target_include_directories(brain_persistence PUBLIC persistence/include atomspace/include)
+target_link_libraries(brain_persistence PUBLIC brain_atomspace SQLite::SQLite3)
+add_library(brain_core STATIC core/brain_core.cpp)
+target_include_directories(brain_core PUBLIC include)
+add_executable(brain_native_smoke tests/native_smoke.cpp)
+target_link_libraries(brain_native_smoke PRIVATE brain_representation brain_persistence)
