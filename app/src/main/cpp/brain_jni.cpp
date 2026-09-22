@@ -45,3 +45,14 @@ Java_com_example_myai_BrainNative_snapshot(JNIEnv* env, jclass) {
     const std::string result = g_brain.snapshot_json();
     return env->NewStringUTF(result.c_str());
 }
+
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_example_myai_BrainNative_hasExplicitContradiction(JNIEnv*, jclass) {
+    return g_brain.has_explicit_contradiction() ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_myai_BrainNative_setHistoryLimit(JNIEnv*, jclass, jint limit) {
+    g_brain.set_history_limit(limit > 0 ? static_cast<std::size_t>(limit) : 1u);
+}
