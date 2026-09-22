@@ -52,6 +52,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+      - name: Generate ONA rule table
+        run: |
+          chmod +x brain/nars/generate_rule_table.sh
+          brain/nars/generate_rule_table.sh
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build Debug APK
