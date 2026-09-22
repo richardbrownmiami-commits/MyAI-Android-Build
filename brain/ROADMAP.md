@@ -1,42 +1,55 @@
 # Roadmap
 
 ## Phase 1 — Native foundation
-- [x] Create ARMv7 brain branch
-- [x] Pin upstream ONA source as a native dependency
-- [x] Trace AtomSpace source dependency closure
-- [x] Define minimal AtomSpace Android target
-- [x] Build native smoke test
+- [x] ARMv7 brain branch
+- [x] Pin upstream ONA source
+- [x] Trace AtomSpace dependency closure
+- [x] Minimal Android AtomSpace core
+- [x] Native SQLite persistence layer
+- [x] Native smoke test
+- [x] Android Gradle/NDK/CMake/JNI target
 
 ## Phase 2 — Cognitive bridge
-- [ ] Define CR data structures
-- [ ] ONA <-> CR adapter
-- [ ] AtomSpace <-> CR adapter
-- [ ] contradiction/provenance handling
+- [x] Cognitive Representation data structures
+- [x] AtomSpace -> Narsese projection
+- [x] ONA bridge API
+- [x] Provenance/source/timestamp/context fields
+- [x] Explicit negation/contradiction marker support
+- [ ] Full bidirectional structural AtomSpace <-> ONA projection for every supported Atom type
 
 ## Phase 3 — Persistence
 - [x] SQLite schema
 - [x] Atom serialization
-- [ ] ONA state persistence
-- [ ] brain import/export
+- [x] Replayable Narsese event persistence
+- [x] brain.brain export/import package
+- [ ] Exact opaque ONA internal-memory snapshot/restore
 
 ## Phase 4 — Android
-- [ ] JNI boundary
-- [ ] Kotlin Brain API
-- [ ] chat UI
-- [ ] offline operation
+- [x] JNI boundary
+- [x] Kotlin Brain API
+- [x] Standalone local chat UI
+- [x] Offline-first text reasoning path
+- [x] ARMv7 native packaging
+- [ ] Device-level install/runtime verification
 
 ## Phase 5 — Learning and tools
-- [ ] topic/dataset ingestion
-- [ ] coding knowledge module
-- [ ] language/translation module
-- [ ] general knowledge module
-- [ ] optional search/fetch tools
+- [x] General/coding/language knowledge ingestion interface
+- [x] Optional web fetch tool
+- [x] Configurable search tool interface
+- [ ] Production search provider integration
+- [ ] Robust natural-language parsing beyond simple symbolic statements
+- [ ] Translation model/ruleset
+- [ ] Larger general-knowledge datasets
+- [ ] Coding knowledge corpus
+
+## Phase 6 — Hardening
+- [ ] Complete ARMv7 APK CI pass with artifact
+- [ ] Native ONA regression tests on Android
+- [ ] Brain format migration/versioning
+- [ ] Memory limits and eviction policy
+- [ ] Provenance and contradiction query APIs
+- [ ] Thread-safety around JNI brain state
 
 ## Acceptance target
-The first meaningful milestone is an ARMv7 APK/native test that can:
-1. create symbolic concepts,
-2. persist them,
-3. load them,
-4. submit reasoning input to ONA,
-5. exchange a defined representation between ONA and AtomSpace,
-6. run with no network connection.
+
+The target is an ARMv7 APK that can create symbolic concepts, run ONA reasoning, persist durable state in SQLite, export/import brain.brain, operate offline, and optionally use web tools when explicitly enabled.
