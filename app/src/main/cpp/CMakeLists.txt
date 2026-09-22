@@ -59,6 +59,7 @@ target_include_directories(myai_brain PRIVATE
     ${BRAIN_ROOT}/atomspace/include
     ${BRAIN_ROOT}/representation/include
     ${BRAIN_ROOT}/nars/include
+    ${BRAIN_ROOT}/brain
     ${ONA_ROOT}/src
 )
 
