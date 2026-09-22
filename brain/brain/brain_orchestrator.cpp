@@ -1,4 +1,4 @@
-#include "brain/brain/brain_orchestrator.h"
+#include "brain_orchestrator.h"
 #include "brain/nars/ona_bridge.h"
 #include "brain/representation/bridge.h"
 #include <sstream>
