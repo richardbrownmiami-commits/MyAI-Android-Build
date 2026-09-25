@@ -2,9 +2,26 @@
 #include "ona_bridge.h"
 #include "brain/representation/bridge.h"
 #include "brain/representation/contradiction.h"
+#include <algorithm>
+#include <cctype>
 #include <sstream>
 #include <utility>
 namespace brain {
+static std::string trim_copy(std::string s) {
+    while(!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) s.erase(s.begin());
+    while(!s.empty() && std::isspace(static_cast<unsigned char>(s.back()))) s.pop_back();
+    return s;
+}
+static std::string lower_copy(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return static_cast<char>(std::tolower(c)); });
+    return s;
+}
+static bool strip_suffix(std::string& s, const std::string& suffix) {
+    if(s.size() >= suffix.size() && s.compare(s.size()-suffix.size(), suffix.size(), suffix)==0) {
+        s.erase(s.size()-suffix.size()); s=trim_copy(s); return true;
+    }
+    return false;
+}
 BrainOrchestrator::BrainOrchestrator(){ nars::init(); nars_ready_=true; }
 BrainOrchestrator::~BrainOrchestrator() = default;
 void BrainOrchestrator::record_history(const std::string& value){
@@ -31,7 +48,7 @@ std::string BrainOrchestrator::process_text(const std::string& text,int cycles){
     }
     const auto marker=text.find(" is ");
     if(marker!=std::string::npos&&marker>0&&marker+4<text.size()){
-        const auto subject=text.substr(0,marker), predicate=text.substr(marker+4);
+        const auto subject=trim_copy(text.substr(0,marker)), predicate=trim_copy(text.substr(marker+4));
         const auto id=representation::inheritance(space_,subject,predicate);
         const auto sentence=representation::atom_to_narsese(space_,id);
         if(nars_ready_){nars::add_narsese(sentence.c_str());nars::cycles(cycles);record_history(sentence);}
@@ -39,6 +56,61 @@ std::string BrainOrchestrator::process_text(const std::string& text,int cycles){
     }
     if(!nars_ready_) return {};
     nars::add_narsese(text.c_str()); nars::cycles(cycles); record_history(text); return text;
+}
+std::string BrainOrchestrator::answer_question(const std::string& text) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::string q=trim_copy(text);
+    while(!q.empty() && (q.back()=='?'||q.back()=='.'||q.back()=='!')) q.pop_back();
+    q=trim_copy(q);
+    const std::string lower=lower_copy(q);
+    auto truth_for = [&](const std::string& subject, const std::string& predicate, int depth, auto&& truth_for_ref) -> bool {
+        if(depth<=0) return false;
+        auto s=space_.find_node(atomspace::AtomType::ConceptNode,subject);
+        auto p=space_.find_node(atomspace::AtomType::ConceptNode,predicate);
+        if(!s || !p) return false;
+        for(const auto& a:space_.atoms()) {
+            auto l=std::dynamic_pointer_cast<atomspace::Link>(a);
+            if(!l || l->type()!=atomspace::AtomType::InheritanceLink || l->outgoing().size()!=2) continue;
+            if(l->outgoing()[0]==s->id() && l->outgoing()[1]==p->id()) return true;
+            if(l->outgoing()[0]==s->id()) {
+                auto next=space_.get(l->outgoing()[1]);
+                auto n=std::dynamic_pointer_cast<atomspace::Node>(next);
+                if(n && truth_for_ref(n->name(),predicate,depth-1,truth_for_ref)) return true;
+            }
+        }
+        return false;
+    };
+    if(lower.rfind("is ",0)==0 || lower.rfind("are ",0)==0) {
+        const auto start=lower.rfind("is ",0)==0 ? 3u : 4u;
+        const auto pos=lower.find(" a ",start);
+        if(pos!=std::string::npos) {
+            const auto subject=trim_copy(q.substr(start,pos-start));
+            const auto predicate=trim_copy(q.substr(pos+3));
+            if(truth_for(subject,predicate,8,truth_for)) return "Yes. "+subject+" is a "+predicate+".";
+            return "I don't know yet whether "+subject+" is a "+predicate+".";
+        }
+    }
+    auto answer_definition = [&](std::string subject) -> std::string {
+        auto s=space_.find_node(atomspace::AtomType::ConceptNode,subject);
+        if(!s) return {};
+        for(const auto& a:space_.atoms()) {
+            auto l=std::dynamic_pointer_cast<atomspace::Link>(a);
+            if(!l || l->type()!=atomspace::AtomType::InheritanceLink || l->outgoing().size()!=2 || l->outgoing()[0]!=s->id()) continue;
+            auto p=std::dynamic_pointer_cast<atomspace::Node>(space_.get(l->outgoing()[1]));
+            if(p) return subject+" is a "+p->name()+".";
+        }
+        return {};
+    };
+    const std::vector<std::string> prefixes={"what is ","what are ","who is ","tell me about "};
+    for(const auto& prefix:prefixes) {
+        if(lower.rfind(prefix,0)==0) {
+            const auto subject=trim_copy(q.substr(prefix.size()));
+            auto answer=answer_definition(subject);
+            if(!answer.empty()) return answer;
+            return "I don't know enough about "+subject+" yet.";
+        }
+    }
+    return {};
 }
 std::string BrainOrchestrator::reason(const std::string& narsese,int cycles){
     std::lock_guard<std::mutex> lock(mutex_);
@@ -69,6 +141,7 @@ std::string BrainOrchestrator::snapshot_json() const{
     return out.str();
 }
 std::size_t BrainOrchestrator::atom_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return space_.size();}
-std::size_t BrainOrchestrator::history_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return narsese_history_.size();}\nbool BrainOrchestrator::has_explicit_contradiction() const noexcept{std::lock_guard<std::mutex> lock(mutex_); for(const auto& a:space_.atoms()) if(representation::is_explicit_contradiction(space_,a->id())) return true; return false;}
+std::size_t BrainOrchestrator::history_count() const noexcept{std::lock_guard<std::mutex> lock(mutex_);return narsese_history_.size();}
+bool BrainOrchestrator::has_explicit_contradiction() const noexcept{std::lock_guard<std::mutex> lock(mutex_); for(const auto& a:space_.atoms()) if(representation::is_explicit_contradiction(space_,a->id())) return true; return false;}
 void BrainOrchestrator::set_history_limit(std::size_t limit){std::lock_guard<std::mutex> lock(mutex_);history_limit_=limit;if(narsese_history_.size()>limit)narsese_history_.erase(narsese_history_.begin(),narsese_history_.begin()+(narsese_history_.size()-limit));}
 }
