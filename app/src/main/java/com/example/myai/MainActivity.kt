@@ -21,7 +21,8 @@ class MainActivity : AppCompatActivity() {
 
         brainStore = BrainStore(this)
         conversation = ConversationEngine(brainStore)
-        binding.statusText.text = "MyAI local brain ${BrainNative.version()}"
+        val profile = brainStore.loadProfile()
+        binding.statusText.text = "MyAI ${BrainNative.version()} · NARS/ONA · personality v${profile.personalityVersion} · prompt v${profile.promptVersion}"
 
         binding.sendButton.setOnClickListener {
             val input = binding.inputText.text.toString().trim()
@@ -29,7 +30,8 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 binding.statusText.text = "Thinking..."
                 binding.aiResponseText.text = conversation.reply(input)
-                binding.statusText.text = "Local brain / web fallback"
+                val current = brainStore.loadProfile()
+                binding.statusText.text = "NARS/ONA · memory · web fallback · personality v${current.personalityVersion} · prompt v${current.promptVersion}"
             }
             binding.inputText.text?.clear()
         }
