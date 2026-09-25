@@ -2,12 +2,12 @@
 
 ## Runtime layers
 1. Chat/UI — Android presentation only.
-2. Brain Orchestrator — routes queries, learning, reasoning, memory, and tools.
+2. Brain Orchestrator — routes conversation, knowledge acquisition, reasoning, memory, and tools.
 3. Cognitive Representation (CR) — stable internal representation shared by the subsystems.
 4. ONA — inference engine and cognitive memory dynamics.
 5. AtomSpace core — symbolic hypergraph/state representation.
 6. Persistence — SQLite serialization of durable brain state.
-7. Tools — optional web search/fetch adapters; never required for offline reasoning.
+7. Tools — web search/fetch adapters used when local knowledge is insufficient; never required for offline reasoning.
 
 ## ONA / AtomSpace boundary
 ONA and AtomSpace remain separate engines. They communicate through the CR adapter.
