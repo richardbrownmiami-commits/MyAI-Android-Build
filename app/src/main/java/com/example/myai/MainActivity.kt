@@ -3,12 +3,12 @@ package com.example.myai
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.myai.databinding.ActivityMainBinding
+import androidx.lifecycle.lifecycleScope\nimport com.example.myai.databinding.ActivityMainBinding\nimport kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private lateinit var brainStore: BrainStore
+    private lateinit var brainStore: BrainStore\n    private lateinit var conversation: ConversationEngine
     private val importRequest = 42
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,13 +16,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        brainStore = BrainStore(this)
+        brainStore = BrainStore(this)\n        conversation = ConversationEngine(brainStore)
         binding.statusText.text = "MyAI local brain ${BrainNative.version()}"
 
         binding.sendButton.setOnClickListener {
             val input = binding.inputText.text.toString().trim()
             if (input.isEmpty()) return@setOnClickListener
-            process(input)
+            lifecycleScope.launch {\n                binding.statusText.text = "Thinking..."\n                binding.aiResponseText.text = conversation.reply(input)\n                binding.statusText.text = "Local brain / web fallback"\n            }
             binding.inputText.text?.clear()
         }
 
