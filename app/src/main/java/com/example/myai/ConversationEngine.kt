@@ -12,10 +12,17 @@ class ConversationEngine(
         if (text.isEmpty()) return@withContext ""
 
         val question = BrainNative.answerQuestion(text)
-        if (question.isNotEmpty()) {
-            brainStore.addEvent(question)
-            brainStore.saveSnapshot(BrainNative.snapshot())
-            return@withContext question
+        if (question.isNotEmpty()) return@withContext question
+
+        if (looksLikeQuestion(text)) {
+            val web = webTools.searchSummary(text)
+            if (web.isSuccess) {
+                val answer = web.getOrNull().orEmpty()
+                if (answer.isNotBlank() && !answer.startsWith("No direct web answer")) {
+                    return@withContext "I did not have that in my local knowledge, so I checked the web.\n\n$answer"
+                }
+            }
+            return@withContext "I do not know that yet, and the web lookup did not return a direct answer."
         }
 
         val learned = BrainNative.processText(text, 2)
@@ -25,24 +32,13 @@ class ConversationEngine(
             return@withContext "I learned: $learned"
         }
 
-        if (looksLikeQuestion(text)) {
-            val web = webTools.searchSummary(text)
-            if (web.isSuccess) {
-                val answer = web.getOrNull().orEmpty()
-                if (answer.isNotBlank() && !answer.startsWith("No direct web answer")) {
-                    return@withContext "I didn't have that in my local knowledge, so I checked the web.\n\n$answer"
-                }
-            }
-            return@withContext "I don't know that yet. I can check the web when a search result is available."
-        }
-
         if (learned.isNotEmpty()) {
             brainStore.addEvent(learned)
             brainStore.saveSnapshot(BrainNative.snapshot())
             return@withContext "I processed that as knowledge: $learned"
         }
 
-        "I understand the message, but I don't know enough to answer it yet."
+        "I understand the message, but I do not know enough to answer it yet."
     }
 
     private fun looksLikeKnowledgeStatement(text: String): Boolean {
