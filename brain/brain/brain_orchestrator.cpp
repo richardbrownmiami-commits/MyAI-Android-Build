@@ -82,10 +82,17 @@ std::string BrainOrchestrator::answer_question(const std::string& text) const {
     };
     if(lower.rfind("is ",0)==0 || lower.rfind("are ",0)==0) {
         const auto start=lower.rfind("is ",0)==0 ? 3u : 4u;
-        const auto pos=lower.find(" a ",start);
+        auto remainder=trim_copy(q.substr(start));
+        if(remainder.rfind("a ",0)==0) remainder=trim_copy(remainder.substr(2));
+        else if(remainder.rfind("an ",0)==0) remainder=trim_copy(remainder.substr(3));
+        const auto normalized=lower_copy(remainder);
+        const auto pos_a=normalized.find(" a ");
+        const auto pos_an=normalized.find(" an ");
+        const auto pos=(pos_a!=std::string::npos && (pos_an==std::string::npos || pos_a<pos_an)) ? pos_a : pos_an;
+        const auto op_len=(pos==pos_an)?4u:3u;
         if(pos!=std::string::npos) {
-            const auto subject=trim_copy(q.substr(start,pos-start));
-            const auto predicate=trim_copy(q.substr(pos+3));
+            const auto subject=trim_copy(remainder.substr(0,pos));
+            const auto predicate=trim_copy(remainder.substr(pos+op_len));
             if(truth_for(subject,predicate,8,truth_for)) return "Yes. "+subject+" is a "+predicate+".";
             return "I don't know yet whether "+subject+" is a "+predicate+".";
         }
@@ -104,7 +111,10 @@ std::string BrainOrchestrator::answer_question(const std::string& text) const {
     const std::vector<std::string> prefixes={"what is ","what are ","who is ","tell me about "};
     for(const auto& prefix:prefixes) {
         if(lower.rfind(prefix,0)==0) {
-            const auto subject=trim_copy(q.substr(prefix.size()));
+            auto subject=trim_copy(q.substr(prefix.size()));
+            const auto subject_lower=lower_copy(subject);
+            if(subject_lower.rfind("a ",0)==0) subject=trim_copy(subject.substr(2));
+            else if(subject_lower.rfind("an ",0)==0) subject=trim_copy(subject.substr(3));
             auto answer=answer_definition(subject);
             if(!answer.empty()) return answer;
             return "I don't know enough about "+subject+" yet.";
