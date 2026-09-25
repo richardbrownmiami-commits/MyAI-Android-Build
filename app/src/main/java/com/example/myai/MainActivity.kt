@@ -3,12 +3,15 @@ package com.example.myai
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.myai.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var brainStore: BrainStore
+    private lateinit var conversation: ConversationEngine
     private val importRequest = 42
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,12 +20,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         brainStore = BrainStore(this)
+        conversation = ConversationEngine(brainStore)
         binding.statusText.text = "MyAI local brain ${BrainNative.version()}"
 
         binding.sendButton.setOnClickListener {
             val input = binding.inputText.text.toString().trim()
             if (input.isEmpty()) return@setOnClickListener
-            process(input)
+            lifecycleScope.launch {
+                binding.statusText.text = "Thinking..."
+                binding.aiResponseText.text = conversation.reply(input)
+                binding.statusText.text = "Local brain / web fallback"
+            }
             binding.inputText.text?.clear()
         }
 
@@ -54,8 +62,11 @@ class MainActivity : AppCompatActivity() {
         brainStore.saveSnapshot(BrainNative.snapshot())
         binding.aiResponseText.text = buildString {
             append("Input: ").append(input)
-            append("\n\nBrain: ").append(if (result.isEmpty()) "accepted" else result)
-            append("\nAtoms: ").append(BrainNative.atomCount())
+            append("
+
+Brain: ").append(if (result.isEmpty()) "accepted" else result)
+            append("
+Atoms: ").append(BrainNative.atomCount())
         }
         binding.statusText.text = "Local / offline"
     }
