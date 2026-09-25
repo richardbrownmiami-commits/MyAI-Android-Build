@@ -36,8 +36,8 @@
 - [x] General/coding/language knowledge ingestion interface
 - [x] Optional web fetch tool
 - [x] Configurable search tool interface
-- [ ] Production search provider integration
-- [ ] Robust natural-language parsing beyond simple symbolic statements
+- [x] Web lookup fallback interface with a default Instant Answer provider\n- [ ] Production search provider integration
+- [x] Basic conversational question/answer path over local symbolic knowledge\n- [ ] Robust natural-language parsing beyond simple symbolic statements\n- [ ] Conversation context and persistent dialogue memory
 - [ ] Translation model/ruleset
 - [ ] Larger general-knowledge datasets
 - [ ] Coding knowledge corpus
