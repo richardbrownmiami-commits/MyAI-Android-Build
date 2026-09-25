@@ -36,11 +36,17 @@
 - [x] General/coding/language knowledge ingestion interface
 - [x] Optional web fetch tool
 - [x] Configurable search tool interface
-- [x] Web lookup fallback interface with a default Instant Answer provider\n- [ ] Production search provider integration
-- [x] Basic conversational question/answer path over local symbolic knowledge\n- [ ] Robust natural-language parsing beyond simple symbolic statements\n- [ ] Conversation context and persistent dialogue memory
+- [x] Web lookup fallback interface with a default Instant Answer provider
+- [ ] Production search provider integration
+- [x] Basic conversational question/answer path over local symbolic knowledge
+- [ ] Robust natural-language parsing beyond simple symbolic statements
+- [x] Bounded persistent conversation memory
 - [ ] Translation model/ruleset
 - [ ] Larger general-knowledge datasets
 - [ ] Coding knowledge corpus
+
+- [x] Versioned personality and self-model persistence
+- [x] Controlled self-prompt proposals with immutable core rules
 
 ## Phase 6 — Hardening
 - [x] Complete ARMv7 APK CI pass with artifact

@@ -11,34 +11,78 @@ class ConversationEngine(
         val text = input.trim()
         if (text.isEmpty()) return@withContext ""
 
+        brainStore.addConversationTurn("user", text)
+        learnConversationPreferences(text)
+
         val question = BrainNative.answerQuestion(text)
-        if (question.isNotEmpty()) return@withContext question
+        if (question.isNotEmpty()) {
+            brainStore.addConversationTurn("assistant", question)
+            return@withContext question
+        }
 
         if (looksLikeQuestion(text)) {
             val web = webTools.searchSummary(text)
             if (web.isSuccess) {
                 val answer = web.getOrNull().orEmpty()
                 if (answer.isNotBlank() && !answer.startsWith("No direct web answer")) {
-                    return@withContext "I did not have that in my local knowledge, so I checked the web.\n\n$answer"
+                    val response = "I did not have that in my local knowledge, so I checked the web.\n\n$answer"
+                    brainStore.addConversationTurn("assistant", response)
+                    return@withContext response
                 }
             }
-            return@withContext "I do not know that yet, and the web lookup did not return a direct answer."
+            val response = "I do not know that yet, and the web lookup did not return a direct answer."
+            brainStore.addConversationTurn("assistant", response)
+            return@withContext response
         }
 
         val learned = BrainNative.processText(text, 2)
-        if (looksLikeKnowledgeStatement(text) && learned.isNotEmpty()) {
-            brainStore.addEvent(learned)
-            brainStore.saveSnapshot(BrainNative.snapshot())
-            return@withContext "I learned: $learned"
-        }
-
         if (learned.isNotEmpty()) {
             brainStore.addEvent(learned)
             brainStore.saveSnapshot(BrainNative.snapshot())
-            return@withContext "I processed that as knowledge: $learned"
+            val response = if (looksLikeKnowledgeStatement(text)) {
+                "I learned: $learned"
+            } else {
+                "I processed that as knowledge: $learned"
+            }
+            brainStore.addConversationTurn("assistant", response)
+            return@withContext response
         }
 
-        "I understand the message, but I do not know enough to answer it yet."
+        val profile = brainStore.loadProfile()
+        val response = "I understand the message, but I do not know enough to answer it yet. " +
+            "My current reasoning focus is \${profile.selfModel.substringBefore('\n').ifBlank { "symbolic reasoning" }}."
+        brainStore.addConversationTurn("assistant", response)
+        response
+    }
+
+    private fun learnConversationPreferences(text: String) {
+        val lower = text.lowercase()
+        when {
+            lower.contains("be concise") || lower.contains("keep answers short") -> {
+                val current = brainStore.loadProfile()
+                brainStore.updatePersonality(
+                    current.personality + "\nCommunication preference learned from conversation: prefer concise answers when the user asks for brevity."
+                )
+            }
+            lower.contains("explain in detail") || lower.contains("be detailed") -> {
+                val current = brainStore.loadProfile()
+                brainStore.updatePersonality(
+                    current.personality + "\nCommunication preference learned from conversation: provide more detailed explanations when requested."
+                )
+            }
+            lower.startsWith("you should ") -> {
+                val instruction = text.removePrefix("You should ").trim()
+                if (instruction.isNotBlank()) {
+                    runCatching {
+                        val id = brainStore.addImprovementProposal(
+                            "Conversation-derived self-improvement suggestion",
+                            "When appropriate, $instruction"
+                        )
+                        brainStore.validateImprovement(id, true)
+                    }
+                }
+            }
+        }
     }
 
     private fun looksLikeKnowledgeStatement(text: String): Boolean {
