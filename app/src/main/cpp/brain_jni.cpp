@@ -28,7 +28,7 @@ Java_com_example_myai_BrainNative_reason(JNIEnv* env, jclass, jstring narsese, j
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_myai_BrainNative_processText(JNIEnv* env, jclass, jstring text, jint cycles) {
+Java_com_example_myai_BrainNative_answerQuestion(JNIEnv* env, jclass, jstring text) {\n    const char* input = env->GetStringUTFChars(text, nullptr);\n    const std::string result = g_brain.answer_question(input);\n    env->ReleaseStringUTFChars(text, input);\n    return env->NewStringUTF(result.c_str());\n}\n\nextern "C" JNIEXPORT jstring JNICALL\nJava_com_example_myai_BrainNative_processText(JNIEnv* env, jclass, jstring text, jint cycles) {
     const char* input = env->GetStringUTFChars(text, nullptr);
     const std::string result = g_brain.process_text(input, static_cast<int>(cycles));
     env->ReleaseStringUTFChars(text, input);
