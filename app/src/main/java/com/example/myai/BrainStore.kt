@@ -133,19 +133,25 @@ When local knowledge is insufficient, retrieve information from the web, assess 
         }finally{writableDatabase.endTransaction()}
     }
     fun exportBrain(target:File){
-        val snapshot=writableDatabase.rawQuery("SELECT snapshot FROM brain_state WHERE id=1",null).use{if(it.moveToFirst())it.getString(0) else "{\\"version\\":$FORMAT_VERSION,\\"atoms\\":[]}"}
-        val events=buildString{writableDatabase.rawQuery("SELECT narsese FROM brain_events ORDER BY id",null).use{c->while(c.moveToNext())append(c.getString(0)).append('\\n')}}
+        val snapshot=writableDatabase.rawQuery("SELECT snapshot FROM brain_state WHERE id=1",null).use{
+            if(it.moveToFirst())it.getString(0) else """{"version":$FORMAT_VERSION,"atoms":[]}"""
+        }
+        val events=buildString{
+            writableDatabase.rawQuery("SELECT narsese FROM brain_events ORDER BY id",null).use{cursor->
+                while(cursor.moveToNext())append(cursor.getString(0)).append('\n')
+            }
+        }
         val profile=loadProfile();val memory=recentConversation(MAX_CONVERSATION_TURNS);val proposals=listImprovementProposals()
         ZipOutputStream(target.outputStream().buffered()).use{zip->
             zip.putNextEntry(ZipEntry("manifest.json"));zip.write("""{"format":"brain.brain","version":$FORMAT_VERSION,"architecture":"armv7-symbolic","persistence":"sqlite+event-replay+cognitive-profile"}""".toByteArray());zip.closeEntry()
             zip.putNextEntry(ZipEntry("atomspace.json"));zip.write(snapshot.toByteArray());zip.closeEntry()
             val dbFile=File(writableDatabase.path);if(dbFile.exists()){zip.putNextEntry(ZipEntry("brain.db"));dbFile.inputStream().use{it.copyTo(zip)};zip.closeEntry()}
             zip.putNextEntry(ZipEntry("narsese.log"));zip.write(events.toByteArray());zip.closeEntry()
-            zip.putNextEntry(ZipEntry("cognitive_profile.txt"));zip.write(("identity_version=\${profile.identityVersion}\\n"+
-                "personality_version=\${profile.personalityVersion}\\nself_model_version=\${profile.selfModelVersion}\\nprompt_version=\${profile.promptVersion}\\n\\n"+
-                "[IMMUTABLE_CORE]\\n$IMMUTABLE_CORE_PROMPT\\n[PERSONALITY]\\n\${profile.personality}\\n[SELF_MODEL]\\n\${profile.selfModel}\\n[SELF_PROMPT]\\n\${profile.selfPrompt}\\n").toByteArray());zip.closeEntry()
-            zip.putNextEntry(ZipEntry("conversation_memory.txt"));memory.forEach{zip.write("\${it.role}\\t\${it.createdMs}\\t\${it.text.replace("\\n"," ")}\\n".toByteArray())};zip.closeEntry()
-            zip.putNextEntry(ZipEntry("improvement_proposals.txt"));proposals.forEach{zip.write("\${it.id}\\t\${it.status}\\t\${it.reason.replace("\\t"," ")}\\t\${it.proposedInstruction.replace("\\n"," ")}\\n".toByteArray())};zip.closeEntry()
+            zip.putNextEntry(ZipEntry("cognitive_profile.txt"));zip.write(("identity_version=${profile.identityVersion}\n"+
+                "personality_version=${profile.personalityVersion}\nself_model_version=${profile.selfModelVersion}\nprompt_version=${profile.promptVersion}\n\n"+
+                "[IMMUTABLE_CORE]\n$IMMUTABLE_CORE_PROMPT\n[PERSONALITY]\n${profile.personality}\n[SELF_MODEL]\n${profile.selfModel}\n[SELF_PROMPT]\n${profile.selfPrompt}\n").toByteArray());zip.closeEntry()
+            zip.putNextEntry(ZipEntry("conversation_memory.txt"));memory.forEach{zip.write("${it.role}\t${it.createdMs}\t${it.text.replace("\n"," ")}\n".toByteArray())};zip.closeEntry()
+            zip.putNextEntry(ZipEntry("improvement_proposals.txt"));proposals.forEach{zip.write("${it.id}\t${it.status}\t${it.reason.replace("\t"," ")}\t${it.proposedInstruction.replace("\n"," ")}\n".toByteArray())};zip.closeEntry()
         }
     }
     fun importBrain(source:File):List<String>{
@@ -153,12 +159,18 @@ When local knowledge is insufficient, retrieve information from the web, assess 
         ZipFile(source).use{zip->
             val manifest=zip.getEntry("manifest.json")?:error("Invalid brain.brain: missing manifest")
             val json=zip.getInputStream(manifest).bufferedReader().use{it.readText()}
-            val version=Regex("\\"version\\"\\\\s*:\\\\s*(\\\\d+)").find(json)?.groupValues?.get(1)?.toIntOrNull()?:error("Invalid brain.brain: missing version")
+            val version=Regex("""\"version\"\s*:\s*(\d+)""").find(json)?.groupValues?.get(1)?.toIntOrNull()
+                ?:error("Invalid brain.brain: missing version")
             require(version in 1..FORMAT_VERSION){"Unsupported brain.brain version $version"}
             val entry=zip.getEntry("narsese.log")?:return@use
-            zip.getInputStream(entry).bufferedReader().useLines{lines->lines.map{it.trim()}.filter{it.isNotBlank()}.takeLast(MAX_EVENTS).forEach(events::add)}
+            zip.getInputStream(entry).bufferedReader().useLines{lines->
+                lines.map{it.trim()}.filter{it.isNotBlank()}.takeLast(MAX_EVENTS).forEach(events::add)
+            }
         }
-        writableDatabase.transaction{delete("brain_events",null,null);events.forEach{execSQL("INSERT INTO brain_events(narsese,created_ms) VALUES(?,?)",arrayOf(it,System.currentTimeMillis()))}}
+        writableDatabase.transaction{
+            delete("brain_events",null,null)
+            events.forEach{execSQL("INSERT INTO brain_events(narsese,created_ms) VALUES(?,?)",arrayOf(it,System.currentTimeMillis()))}
+        }
         return events
     }
     private inline fun <T>SQLiteDatabase.transaction(block:SQLiteDatabase.()->T):T{beginTransaction();return try{val r=block();setTransactionSuccessful();r}finally{endTransaction()}}
