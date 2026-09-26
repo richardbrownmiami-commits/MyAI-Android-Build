@@ -11,7 +11,7 @@ public:
     ~BrainOrchestrator();
     std::string remember_inheritance(const std::string& subject, const std::string& predicate, const std::string& source = "android");
     std::string process_text(const std::string& text, int cycles = 2);
-    std::string answer_question(const std::string& text) const;
+    std::string answer_question(const std::string& text);
     std::string reason(const std::string& narsese, int cycles = 1);
     std::string snapshot_json() const;
     std::size_t atom_count() const noexcept;
