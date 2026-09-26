@@ -112,7 +112,6 @@ static std::string json_escape(const std::string& s){
     return out;
 }
 }
-}
 
 BrainOrchestrator::BrainOrchestrator(){nars::init();nars_ready_=true;__android_log_print(ANDROID_LOG_INFO,TAG,"ONA initialized");}
 BrainOrchestrator::~BrainOrchestrator()=default;
