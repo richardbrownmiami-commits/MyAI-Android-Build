@@ -25,6 +25,7 @@ std::string atom_to_narsese(const AtomSpace& as, AtomId id) {
 AtomId inheritance(AtomSpace& as,const std::string&a,const std::string&b,double f,double c,const AtomMetadata&m){return binary(as,AtomType::InheritanceLink,a,b,m,{f,c});}
 AtomId similarity(AtomSpace& as,const std::string&a,const std::string&b,const AtomMetadata&m){return binary(as,AtomType::SimilarityLink,a,b,m);}
 AtomId implication(AtomSpace& as,const std::string&a,const std::string&b,const AtomMetadata&m){return binary(as,AtomType::ImplicationLink,a,b,m);}
+AtomId negation(AtomSpace& as,const std::string&a,const std::string&b,const AtomMetadata&m){return binary(as,AtomType::NegationLink,a,b,m);}
 bool ingest_narsese(AtomSpace& as,const std::string&s,AtomId*created) {
     auto t=s; while(!t.empty()&&(t.back()=='.'||t.back()==' '||t.back()=='\n'||t.back()=='\r')) t.pop_back();
     if(t.size()<7||t.front()!='<'||t.back()!='>') return false;
