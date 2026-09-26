@@ -71,6 +71,15 @@ static bool parse_question(const std::string& text,std::string& subject,std::str
     predicate=clean_term(remainder.substr(p+width));
     return !subject.empty()&&!predicate.empty();
 }
+static bool parse_definition_question(const std::string& text,std::string& concept){
+    std::string q=trim_copy(text);
+    while(!q.empty()&&(q.back()=='?'||q.back()=='.'||q.back()=='!'))q.pop_back();
+    const std::string lower=lower_copy(q);
+    if(lower.rfind("what is ",0)!=0)return false;
+    concept=clean_term(q.substr(8));
+    return !concept.empty();
+}
+
 static bool direct_relation(const atomspace::AtomSpace& space,const std::string& subject,const std::string& predicate,atomspace::AtomType type){
     auto s=space.find_node(atomspace::AtomType::ConceptNode,subject);
     auto p=space.find_node(atomspace::AtomType::ConceptNode,predicate);
@@ -113,7 +122,11 @@ static std::string json_escape(const std::string& s){
 }
 }
 
-BrainOrchestrator::BrainOrchestrator(){nars::init();nars_ready_=true;__android_log_print(ANDROID_LOG_INFO,TAG,"ONA initialized");}
+BrainOrchestrator::BrainOrchestrator(){
+    nars::init();nars_ready_=true;
+    __android_log_print(ANDROID_LOG_INFO,TAG,"ONA initialized");
+    remember_inheritance("red","color","bootstrap");
+}
 BrainOrchestrator::~BrainOrchestrator()=default;
 
 void BrainOrchestrator::record_history(const std::string& value){
@@ -159,6 +172,25 @@ std::string BrainOrchestrator::process_text(const std::string& text,int cycles){
 
 std::string BrainOrchestrator::answer_question(const std::string& text){
     std::lock_guard<std::mutex> lock(mutex_);
+    std::string concept;
+    if(parse_definition_question(text,concept)){
+        const auto node=space_.find_node(atomspace::AtomType::ConceptNode,concept);
+        if(node){
+            for(const auto& atom:space_.atoms()){
+                auto link=std::dynamic_pointer_cast<atomspace::Link>(atom);
+                if(!link||link->type()!=atomspace::AtomType::InheritanceLink||link->outgoing().size()!=2||link->outgoing()[0]!=node->id())continue;
+                auto target=std::dynamic_pointer_cast<atomspace::Node>(space_.get(link->outgoing()[1]));
+                if(target){
+                    const std::string query="<"+concept+" --> "+target->name()+">?";
+                    if(nars_ready_){nars::add_narsese(query.c_str());nars::cycles(8);record_history(query);}
+                    std::string display=concept;
+                    if(!display.empty())display[0]=static_cast<char>(std::toupper(static_cast<unsigned char>(display[0])));
+                    return display+" is a "+target->name()+".";
+                }
+            }
+        }
+        return "I don't know what "+concept+" is yet.";
+    }
     std::string subject,predicate;
     if(!parse_question(text,subject,predicate))return {};
     const std::string query="<"+subject+" --> "+predicate+">?";
